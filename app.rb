@@ -72,7 +72,7 @@ class Board
     end
 
     def get_piece(piece, turn, row, collumn)
-        if piece == 'p'
+        if piece == ''
             turn == 'white' ? piece = white_pawn : piece = black_pawn
         
         elsif piece == 'n'
@@ -110,7 +110,11 @@ class Board
         end
     end
         
-    def find_piece (piece)
+    def find_piece (piece, row, collumn)
+        if piece = white_pawn || piece == black_pawn
+            
+
+
         grid.each_with_index do |row, i|
             if row.index(piece).nil?
                 next
@@ -165,7 +169,7 @@ class Board
     end
 
     def legal_bishop_movement?(piece_position, row, collumn)
-        unless bishop_jumped_over_piece?()
+        unless bishop_jumped_over_piece?(piece_position, row, collumn)
             POSSIBLE_BISHOP_MOVES.each do |combo|
                 if piece_position[0] + combo[0] == row && piece_position[1] + combo[1] == collumn
                     return true
@@ -221,7 +225,7 @@ class Board
     end
     def legal_rook_movement?(piece_position, row, collumn)
         #it needs to be Not 0 in one and 0 in the other
-        unless rooke_jumped_over_piece?()
+        unless rooke_jumped_over_piece?(piece_position, row, collumn)
             if row == 0 && collumn != 0
                 true
             elsif row != 0 && collumn == 0
@@ -300,7 +304,7 @@ class Game
         puts "-------"
         puts "-------"
         
-        puts "Choose piece (k, q, r, b, n, p): "
+        puts "Choose piece (k, q, r, b, n: '')"
         piece = gets.chomp
         puts "Choose row: "
         row = -(gets.chomp.to_i)
@@ -310,10 +314,15 @@ class Game
         puts "-------"
         puts "-------"
         
-        piece = board.get_piece(piece, turn, row, collumn)
-        piece_position = board.find_piece(piece)
+        if row > 7 || row < 0 || collumn > 7 || collumn < 0
+            puts 'Invalid move'
+            return
+        end
 
-        if board.legal_move?(piece, piece_position, row, collumn)
+        piece = board.get_piece(piece, turn, row, collumn)
+        piece_position = board.find_piece(piece, row, collumn)
+
+        unless board.legal_move?(piece, piece_position, row, collumn)
             puts 'Invalid move'
             return
         end
@@ -325,5 +334,6 @@ end
 
 
 g = Game.new
+g.play_round
 g.play_round
 # g.board.display_board
