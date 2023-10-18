@@ -47,57 +47,61 @@ class Board
             puts row.join(' ')
         end
     end
-    def update_board(piece, row, collumn, turn)
-        turn == 'white' ? piece = white_knight : piece = black_knight
-        current_position = find_knight(turn)
-        grid[row][collumn] = piece
-        grid[current_position[0]][current_position[1]] = '□'
-        display_board()
+    def update_board (piece, piece_position, row, collumn)
+        temp = piece
+        grid[piece_position[0]][piece_position[1]] = '□'
+        grid[row][collumn] = temp
     end
 
-    def legal_move?(piece, row, collumn, turn)
-        if piece == 'n'
-            unless check_knight(row, collumn, turn)
-               return false
-            end
-        elsif piece == 'p'
+    def legal_move?(piece, piece_position, row, collumn)
+        if outside_board?(row, collumn) || legal_piece_movement?(piece, piece_position, row, collumn) == false || find_piece(piece) == false 
+            false
+        else
+            true
         end
-        end
-
-
-        check = true
-        #check univeral rules, if they don't pass, return false and stop function
+    end
         
+    def outside_board?(row, collumn)
+        check = true
         grid[row].nil? ? check = false : ''
         check == false ? '' : grid[row][collumn].nil? ? check = false : ''
-        
-        #- You can’t make a move that results in you being in check next turn
-            # - A pinned knight
-            # - A king in check - you can’t move another pice unless it gets you out of check
-        # You can’t go trough a piece (unless if you’re a knight)
-
-        #check piece based rules, if they don't pass, return false and stop function
-
-
-        #return true
         check
     end
 
-    def check_knight(row, collumn, turn)
-        knight_pos = find_knight(turn)
-        if knight_pos == false
-            return false
+    def get_piece(piece, turn)
+        if piece == 'p'
+            turn == 'white' ? piece = white_pawn : piece = black_pawn
+        elsif piece == 'n'
+            turn == 'white' ? piece = white_knight : piece = black_knight
+        elsif piece == 'r'
+            turn == 'white' ? piece = white_rook : piece = black_rook
+        elsif piece == 'b'
+            turn == 'white' ? piece = white_bishop : piece = black_bishop
+        elsif piece == 'q'
+            turn == 'white' ? piece = white_queen : piece = black_queen
+        elsif piece == 'k'
+            turn == 'white' ? piece = white_king : piece = black_king
         end
-
-        POSSIBLE_KNIGHT_MOVES.each do |combo|
-            if knight_pos[0] + combo[0] == row && knight_pos[1] + combo[1] == collumn
-                return true
-            end
-        end
-        false
+        piece
     end
-    def find_knight(turn)
-        turn == 'white' ? piece = white_knight : piece = black_knight
+
+    def legal_piece_movement? (piece, piece_position, row, collumn)
+        if piece == white_pawn || piece == black_pawn
+            legal_pawn_movement?(piece_position, row, collumn)
+        elsif piece == white_knight || piece == black_knight
+            legal_knight_movement?(piece_position, row, collumn)
+        elsif piece == white_bishop || piece == black_bishop
+            legal_bishop_movement?(piece_position, row, collumn)
+        elsif piece == white_rook || piece == black_rook
+            legal_rook_movement?(piece_position, row, collumn)
+        elsif piece == white_queen || piece == black_queen
+            legal_queen_movement?(piece_position, row, collumn)
+        elsif piece = white_king || piece == black_king
+            legal_king_movement?(piece_position, row, collumn)
+        end
+    end
+        
+    def find_piece (piece)
         grid.each_with_index do |row, i|
             if row.index(piece).nil?
                 next
@@ -109,6 +113,21 @@ class Board
         return false
     end
 
+    def legal_knight_movement?(piece_position, row, collumn)
+        POSSIBLE_KNIGHT_MOVES.each do |combo|
+            if piece_position[0] + combo[0] == row && piece_position[1] + combo[1] == collumn
+                return true
+            end
+        end
+        false
+    end
+
+    def legal_pawn_movement?(piece_position, row, collumn)
+        unless piece_position[0] + 1 == row
+            false
+        end
+        true
+    end
 
     def take_piece?
         #check if a player is taking a piece
@@ -153,7 +172,7 @@ class Game
         board.display_board
         puts "-------"
         puts "-------"
-        puts "-------"
+
 
         puts "It's #{turn}'s turn. Make a move"
         puts "-------"
@@ -162,29 +181,27 @@ class Game
         puts "Choose piece (k, q, r, b, n, p): "
         piece = gets.chomp
         puts "Choose row: "
-        row = 7 - gets.chomp.to_i
+        row = -(gets.chomp.to_i)
         puts "Choose collumn: "
-        collumn = gets.chomp.to_i
+        collumn = gets.chomp.to_i - 1
         
         puts "-------"
         puts "-------"
+        
+        piece = board.get_piece(piece, turn)
+        piece_position = board.find_piece(piece)
 
-        if board.legal_move?(piece, row, collumn, turn)
-            board.update_board(piece, row, collumn, turn)
-            turn.switch
+        if board.legal_move?(piece, piece_position, row, collumn)
+            puts 'Invalid move'
+            return
         end
-
-
-        #If board.legal_move?(piece, row, collumn, turn)
-            #Make the move, aka, update the borard
-            #If take piece, update the board too.
-        #If not, display move not allowed error, and recall playround
-        #Change the turn
+    
+        board.update_board(piece, piece_position, row, collumn)        
+        board.display_board()
     end
 end
 
 
 g = Game.new
-g.play_round
 g.play_round
 # g.board.display_board
