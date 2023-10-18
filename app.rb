@@ -1,45 +1,38 @@
-$substrings_list = []
+class Board
+    attr_reader :grid
 
-def substrings (word, dictionary)
-    dictionary = dictionary.map {|str| str.downcase}
-    word = word.downcase
-    $size = word.length
-    hash = {}
-
-    find_subs(word)
-
-    $substrings_list.each do |sub_string|
-        dictionary.each do |dict_word|
-            if sub_string == dict_word
-                if hash[sub_string] != nil
-                    hash[sub_string] += 1
-                else
-                    hash[sub_string] = 1
-                end
-            end
+    def initialize
+        @grid = Array.new(8) {Array.new(8) {'empty'}}
+    end
+    def display_board
+        grid.each do |row|
+            puts row.join(' ')
         end
     end
 
-    return hash
 end
 
-def find_subs (word, index=0, target=0)
-    if word.empty?
-        return
+class Players
+    def initialize (piece_color, name)
+        @piece_color = piece_color
+        @name = name
     end
+end
+
+class Game
+    def initialize
+        @board = Board.new
+        @p1 = Players.new('white', set_player_name(1))
+        @p2 = Players.new('black', set_player_name(2))
+    end
+
+    def set_player_name(number)
+        puts "Player #{number}, what's your name?"
+        gets.chomp
+    end
+
+
+
     
-    while target < word.length
-        $substrings_list.push(word[index..target]) 
-        target+=1
-    end
-
-    if index<=$size
-        word = word[1..-1]
-        find_subs(word, index=0, target=0)
-    else
-        return
-    end
-end
-
-# list = ["below","down","go","going","horn","how","howdy","it","i","low","own","part","partner","sit"]
-# substrings("Howdy partner, sit down! How's it going?", list)
+# b = Board.new
+# b.display_board
