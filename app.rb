@@ -2,6 +2,9 @@ class Board
     attr_accessor :grid, :white_king, :white_queen, :white_rook, :white_bishop, :white_knight, :white_pawn, :black_king, :black_queen, :black_rook, :black_bishop, :black_knight, :black_pawn
 
     POSSIBLE_KNIGHT_MOVES = [[1, 2] , [1, -2], [-1, 2], [-1, -2], [2, 1], [2, -1], [-2, 1], [-2, -1]].freeze
+    POSSIBLE_BISHOP_MOVES = [[-1, -1] [-2, -2], [-3, -3], [-4, -4], [-5, -5], [-6, -6], [-7, -7] [1, 1] [2, 2], [3, 3], [4, 4], [5, 5], [6, 6], [7, 7]].freeze
+    POSSIBLE_KING_MOVES = [ [1,1], [-1, -1], [1, -1], [-1, 1], [1, 0], [0, 1], [-1, 0], [0, -1]].freeze
+    
 
     def initialize
         @grid = Array.new(8) {Array.new(8) {'□'}}
@@ -68,17 +71,23 @@ class Board
         check
     end
 
-    def get_piece(piece, turn)
+    def get_piece(piece, turn, row, collumn)
         if piece == 'p'
             turn == 'white' ? piece = white_pawn : piece = black_pawn
+        
         elsif piece == 'n'
             turn == 'white' ? piece = white_knight : piece = black_knight
-        elsif piece == 'r'
-            turn == 'white' ? piece = white_rook : piece = black_rook
+        
         elsif piece == 'b'
             turn == 'white' ? piece = white_bishop : piece = black_bishop
+
+        elsif piece == 'r'
+            turn == 'white' ? piece = white_rook : piece = black_rook
+        
+        #These ones are easy, there's only one of them (unless there's two queens on the board!)
         elsif piece == 'q'
             turn == 'white' ? piece = white_queen : piece = black_queen
+        
         elsif piece == 'k'
             turn == 'white' ? piece = white_king : piece = black_king
         end
@@ -126,7 +135,120 @@ class Board
         unless piece_position[0] + 1 == row
             false
         end
+        if grid[row][collumn] != '□'
+            false
+        end
         true
+    end
+
+    def bishop_jumped_over_piece?(piece_position, row, collumn)
+        diff = row - piece_position[0]
+        squares_between_start_end = diff - 1
+        if squares_between_start_end > 0
+            i = 1
+            until i > squares_between_start_end
+                if grid[piece_position[0]+i][piece_position[1]+i] != '□'
+                    return false
+                end
+                i+=1
+            end
+        else
+            i = -1
+            until i < squares_between_start_end
+                if grid[piece_position[0]-i][piece_position[1]-i] != '□'
+                    return false
+                end
+                i-=1
+            end
+        end
+        true
+    end
+
+    def legal_bishop_movement?(piece_position, row, collumn)
+        unless bishop_jumped_over_piece?()
+            POSSIBLE_BISHOP_MOVES.each do |combo|
+                if piece_position[0] + combo[0] == row && piece_position[1] + combo[1] == collumn
+                    return true
+                end
+            end
+            false
+        end
+    end
+
+    def rooke_jumped_over_piece?(piece_position, row, collumn)
+        if row != 0 
+            diff = row - piece_position[0]
+            squares_between_start_end = diff - 1
+            if squares_between_start_end > 0
+                i = 1
+                until i > squares_between_start_end
+                    if grid[piece_position[0]+i][collumn] != '□'
+                        return false
+                    end
+                    i+=1
+                end
+            else
+                i = -1
+                until i < squares_between_start_end
+                    if grid[piece_position[0]-i][collumn] != '□'
+                        return false
+                    end
+                    i-=1
+                end
+            end
+        elsif collumn != 0 
+            diff = collumn - piece_position[1]
+            squares_between_start_end = diff - 1
+            if squares_between_start_end > 0
+                i = 1
+                until i > squares_between_start_end
+                    if grid[row][piece_position[1]+i] != '□'
+                        return false
+                    end
+                    i+=1
+                end
+            else
+                i = -1
+                until i < squares_between_start_end
+                    if grid[row][piece_position[1]-i] != '□'
+                        return false
+                    end
+                    i-=1
+                end
+            end
+        end
+        true
+    end
+    def legal_rook_movement?(piece_position, row, collumn)
+        #it needs to be Not 0 in one and 0 in the other
+        unless rooke_jumped_over_piece?()
+            if row == 0 && collumn != 0
+                true
+            elsif row != 0 && collumn == 0
+                true
+            else
+                false
+            end
+        end
+    end
+
+    def legal_queen_movement?(piece_position, row, collumn)
+        unless bishop_jumped_over_piece?(piece_position, row, collumn) || rooke_jumped_over_piece?(piece_position, row, collumn)
+            if legal_rook_movement?(piece_position, row, collumn) || legal_bishop_movement?(piece_position, row, collumn)
+                true
+            else
+                false
+            end
+        end
+    end
+
+    def legal_king_movement?(piece_position, row, collumn)
+        POSSIBLE_KNIGHT_MOVES.each do |combo|
+            if piece_position[0] + combo[0] == row && piece_position[1] + combo[1] == collumn
+                return true
+            end
+        end
+        false
     end
 
     def take_piece?
@@ -188,7 +310,7 @@ class Game
         puts "-------"
         puts "-------"
         
-        piece = board.get_piece(piece, turn)
+        piece = board.get_piece(piece, turn, row, collumn)
         piece_position = board.find_piece(piece)
 
         if board.legal_move?(piece, piece_position, row, collumn)
