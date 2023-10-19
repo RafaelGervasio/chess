@@ -61,5 +61,25 @@ describe Board do
         end
     end
 
-    context "legal" do
+    context "legal_bishop_movement?" do
+        it 'returns true when making a legal bishop move' do
+            expect(board.legal_bishop_movement?([-3, 2], -5, 4)).to be true
+        end
+
+        it 'returns true when making a legal bishop move' do
+            expect(board.legal_bishop_movement?([-6, 7], -4, 5)).to be true
+        end
+
+        it 'returns true when making a legal bishop move' do
+            expect(board.legal_bishop_movement?([-3, 7], -6, 4)).to be true
+        end
+
+        it 'returns false when making a non-diag move' do
+            expect(board.legal_bishop_movement?([-4, 7], -6, 4)).to be false
+        end
+
+        it 'returns false when landing on a friendly piece' do
+            expect(board.legal_bishop_movement?([-1, 2], -2, 3)).to be false
+        end
+    end
 end
