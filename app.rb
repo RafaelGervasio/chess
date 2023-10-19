@@ -1,5 +1,112 @@
+module Pieces
+    WHITE_KING = "♔"
+    WHITE_QUEEN = "♕"
+  
+    WHITE_K_ROOK = "♖"
+    WHITE_Q_ROOK = "♖"
+  
+    WHITE_K_BISHOP = "♗"
+    WHITE_Q_BISHOP = "♗"
+  
+    WHITE_K_KNIGHT = "♘"
+    WHITE_Q_KNIGHT = "♘"
+  
+    WHITE_PAWN_1 = "♙"
+    WHITE_PAWN_2 = "♙"
+    WHITE_PAWN_3 = "♙"
+    WHITE_PAWN_4 = "♙"
+    WHITE_PAWN_5 = "♙"
+    WHITE_PAWN_6 = "♙"
+    WHITE_PAWN_7 = "♙"
+    WHITE_PAWN_8 = "♙"
+  
+    WHITE_PIECES = [
+        WHITE_KING,
+        WHITE_QUEEN,
+        WHITE_K_ROOK,
+        WHITE_Q_ROOK,
+        WHITE_K_BISHOP,
+        WHITE_Q_BISHOP,
+        WHITE_K_KNIGHT,
+        WHITE_Q_KNIGHT,
+        WHITE_PAWN_1,
+        WHITE_PAWN_2,
+        WHITE_PAWN_3,
+        WHITE_PAWN_4,
+        WHITE_PAWN_5,
+        WHITE_PAWN_6,
+        WHITE_PAWN_7,
+        WHITE_PAWN_8
+    ]
+
+    BLACK_KING = "♚"
+    BLACK_QUEEN = "♛"
+  
+    BLACK_K_ROOK = "♜"
+    BLACK_Q_ROOK = "♜"
+  
+    BLACK_K_BISHOP = "♝"
+    BLACK_Q_BISHOP = "♝"
+  
+    BLACK_K_KNIGHT = "♞"
+    BLACK_Q_KNIGHT = "♞"
+  
+    BLACK_PAWN_1 = "♟"
+    BLACK_PAWN_2 = "♟"
+    BLACK_PAWN_3 = "♟"
+    BLACK_PAWN_4 = "♟"
+    BLACK_PAWN_5 = "♟"
+    BLACK_PAWN_6 = "♟"
+    BLACK_PAWN_7 = "♟"
+    BLACK_PAWN_8 = "♟"
+
+    BLACK_PIECES = [
+        BLACK_KING,
+        BLACK_QUEEN,
+        BLACK_K_ROOK,
+        BLACK_Q_ROOK,
+        BLACK_K_BISHOP,
+        BLACK_Q_BISHOP,
+        BLACK_K_KNIGHT,
+        BLACK_Q_KNIGHT,
+        BLACK_PAWN_1,
+        BLACK_PAWN_2,
+        BLACK_PAWN_3,
+        BLACK_PAWN_4,
+        BLACK_PAWN_5,
+        BLACK_PAWN_6,
+        BLACK_PAWN_7,
+        BLACK_PAWN_8
+    ]
+  
+    WHITE_PAWNS = [
+      WHITE_PAWN_1,
+      WHITE_PAWN_2,
+      WHITE_PAWN_3,
+      WHITE_PAWN_4,
+      WHITE_PAWN_5,
+      WHITE_PAWN_6,
+      WHITE_PAWN_7,
+      WHITE_PAWN_8
+    ]
+  
+    BLACK_PAWNS = [
+      BLACK_PAWN_1,
+      BLACK_PAWN_2,
+      BLACK_PAWN_3,
+      BLACK_PAWN_4,
+      BLACK_PAWN_5,
+      BLACK_PAWN_6,
+      BLACK_PAWN_7,
+      BLACK_PAWN_8
+    ]
+end
+  
+
+
 class Board
-    attr_accessor :grid, :white, :black, :white_king, :white_queen, :white_rook, :white_bishop, :white_knight, :white_pawn, :black_king, :black_queen, :black_rook, :black_bishop, :black_knight, :black_pawn
+    include Pieces
+    attr_accessor :grid 
 
     POSSIBLE_KNIGHT_MOVES = [[1, 2] , [1, -2], [-1, 2], [-1, -2], [2, 1], [2, -1], [-2, 1], [-2, -1]].freeze
     POSSIBLE_BISHOP_MOVES = [[-1, -1], [-2, -2], [-3, -3], [-4, -4], [-5, -5], [-6, -6], [-7, -7], [1, 1], [2, 2], [3, 3], [4, 4], [5, 5], [6, 6], [7, 7], [-1, 1], [-2, 2], [-3, 3], [-4, 4], [-5, 5], [-6, 6], [-7, 7], [1, -1], [2, -2], [3, -3], [4, -4], [5, -5], [6, -6], [7, -7]].freeze
@@ -7,42 +114,34 @@ class Board
 
     def initialize
         @grid = Array.new(8) {Array.new(8) {'□'}}
-        @white_king = "♔"
-        @white_queen = "♕"
-        @white_rook = "♖"
-        @white_bishop = "♗"
-        @white_knight = "♘"
-        @white_pawn = "♙"
-        @black_king = "♚"
-        @black_queen = "♛"
-        @black_rook = "♜"
-        @black_bishop = "♝"
-        @black_knight = "♞"
-        @black_pawn = "♟" 
-        @white = [white_king, white_queen, white_rook, white_bishop, white_knight, white_pawn]
-        @black = [black_king, black_queen, black_rook, black_bishop, black_knight, black_pawn]
         populate_board()
     end
     def populate_board
-        grid[1] = grid[-1].map { |elem| elem = black_pawn }
-        grid[0][0] = black_rook
-        grid[0][-1] = black_rook
-        grid[0][1] = black_knight
-        grid[0][-2] = black_knight
-        grid[0][2] = black_bishop
-        grid[0][-3] = black_bishop
-        grid[0][3] = black_queen
-        grid[0][-4] = black_king
+        (0..7).each do |i|
+            grid[-7][i] = BLACK_PAWNS[i]
+        end        
+        (0..7).each do |i|
+            grid[-2][i] = WHITE_PAWNS[i]
+        end
 
-        grid[-2] = grid[-1].map { |elem| elem = white_pawn }
-        grid[-1][0] = white_rook
-        grid[-1][-1] = white_rook
-        grid[-1][1] = white_knight
-        grid[-1][-2] = white_knight
-        grid[-1][2] = white_bishop
-        grid[-1][-3] = white_bishop
-        grid[-1][3] = white_queen
-        grid[-1][-4] = white_king
+        grid[0][0] = BLACK_Q_ROOK
+        grid[0][-1] = BLACK_Q_ROOK
+        grid[0][1] = BLACK_Q_KNIGHT
+        grid[0][-2] = BLACK_K_KNIGHT
+        grid[0][2] = BLACK_Q_BISHOP
+        grid[0][-3] = BLACK_K_BISHOP
+        grid[0][3] = BLACK_QUEEN
+        grid[0][-4] = BLACK_KING
+        
+        grid[-1][0] = WHITE_Q_ROOK
+        grid[-1][-1] = WHITE_K_ROOK
+        grid[-1][1] = WHITE_Q_KNIGHT
+        grid[-1][-2] = WHITE_K_KNIGHT
+        grid[-1][2] = WHITE_Q_BISHOP
+        grid[-1][-3] = WHITE_K_BISHOP
+        grid[-1][3] = WHITE_QUEEN
+        grid[-1][-4] = WHITE_KING
+        
       end
       
     
@@ -137,13 +236,15 @@ class Board
         if white.include?(grid[piece_position[0]][piece_position[1]])
             if white.include?(grid[row][collumn])
                 return true
+            elsif black.include?(grid[row][collumn])
+                return false
             end
-            #if black include, you're taking a piece
         elsif black.include?(grid[piece_position[0]][piece_position[1]])
             if black.include?(grid[row][collumn])
                 return true
+            elsif white.include?(grid[row][collumn])
+                return false
             end
-            #if white include, you're taking a piece
         end
         false
     end
@@ -310,22 +411,40 @@ class Board
         false
     end
 
-    def take_piece?
-        #check if a player is taking a piece
+    def check? (turn)
+        if turn  == 'white'
+            target = find_piece(WHITE_KING)
+            BLACK_PIECES.each do |piece|
+                if legal_piece_movement?(piece, find_piece(piece), target[0], target[1])
+                    return true
+                end
+            end
+        else
+            target = find_piece(BLACK_KING)
+            WHITE_PIECES.each do |piece|
+                if legal_piece_movement?(piece, find_piece(piece), target[0], target[1])
+                    return true
+                end
+            end
+        end
+        false
     end
+
+
+
 
 end
 
 class Players
-    attr_reader :piece_color, :name 
+    attr_reader :piece_color
     def initialize (piece_color)
         @piece_color = piece_color
     end
 end
 
 class Game
-    attr_reader :p1, :p2, :board
-    attr_accessor :turn
+    attr_reader :p1, :p2
+    attr_accessor :turn, :board
 
     def initialize
         @board = Board.new
@@ -384,5 +503,7 @@ class Game
 end
 
 
-board = Board.new
-board.legal_queen_movement?([-3, 4], -6, 4)
+game = Game.new
+
+game.board.grid[-8][3] = game.board.grid[0][3]
+p game.board.check?('white')
