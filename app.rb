@@ -1,5 +1,5 @@
 class Board
-    attr_accessor :grid, :white_king, :white_queen, :white_rook, :white_bishop, :white_knight, :white_pawn, :black_king, :black_queen, :black_rook, :black_bishop, :black_knight, :black_pawn
+    attr_accessor :grid, :white, :black, :white_king, :white_queen, :white_rook, :white_bishop, :white_knight, :white_pawn, :black_king, :black_queen, :black_rook, :black_bishop, :black_knight, :black_pawn
 
     POSSIBLE_KNIGHT_MOVES = [[1, 2] , [1, -2], [-1, 2], [-1, -2], [2, 1], [2, -1], [-2, 1], [-2, -1]].freeze
     POSSIBLE_BISHOP_MOVES = [[-1, -1] [-2, -2], [-3, -3], [-4, -4], [-5, -5], [-6, -6], [-7, -7] [1, 1] [2, 2], [3, 3], [4, 4], [5, 5], [6, 6], [7, 7]].freeze
@@ -20,6 +20,8 @@ class Board
         @black_bishop = "♝"
         @black_knight = "♞"
         @black_pawn = "♟" 
+        @white = [white_king, white_queen, white_rook, white_bishop, white_knight, white_pawn]
+        @black = [black_king, black_queen, black_rook, black_bishop, black_knight, black_pawn]
         populate_board()
     end
     def populate_board
@@ -79,7 +81,6 @@ class Board
         if piece == 'p'
             turn == 'white' ? piece = white_pawn : piece = black_pawn
         elsif piece == 'n'
-            p 'NNN'
             turn == 'white' ? piece = white_knight : piece = black_knight
         elsif piece == 'b'
             turn == 'white' ? piece = white_bishop : piece = black_bishop
@@ -135,11 +136,7 @@ class Board
 
     def legal_pawn_movement?(piece_position, row, collumn)
         #works for rr
-
-        unless piece_position[0] - 1 == row
-            return false
-        end
-        if grid[row][collumn] != '□'
+        if piece_position[1] != collumn || grid[row][collumn] != '□' || row >= piece_position[0] || piece_position[0] - 1 != row
             return false
         end
         return true
@@ -147,6 +144,18 @@ class Board
 
     def legal_knight_movement?(piece_position, row, collumn)
         #works for rr
+        
+        if grid[piece_position[0]][piece_position[1]] == white_knight
+            if white.include?(grid[row][collumn])
+                return false
+            end
+            #if black include, you're taking a piece
+        else
+            if black.include?(grid[row][collumn])
+                return false
+            end
+            #if white include, you're taking a piece
+        end
         POSSIBLE_KNIGHT_MOVES.each do |combo|
             if piece_position[0] - combo[0] == row && piece_position[1] + combo[1] == collumn
                 return true
