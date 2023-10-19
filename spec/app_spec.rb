@@ -4,8 +4,9 @@ describe Board do
     board = Board.new
     board.populate_board
     context 'legal_pawn_movement?' do
-        
-        board.grid[-3][4] = board.white_rook
+        before do
+            board.grid[-3][4] = board.white_rook
+        end
         it 'returns false when pawn lands over piece' do 
             expect(board.legal_pawn_movement?([-2, 4], -3, 4)).to be false
         end
@@ -80,6 +81,90 @@ describe Board do
 
         it 'returns false when landing on a friendly piece' do
             expect(board.legal_bishop_movement?([-1, 2], -2, 3)).to be false
+        end
+
+        it 'returns false when jumping over a piece' do
+            board.grid[-4][3] = board.black_rook
+            expect(board.legal_bishop_movement?([-3, 2], -6, 5)).to be false
+        end
+    end
+
+    context "legal_rook_movement?" do
+        br = Board.new
+        it 'returns true when making a legal rook move' do
+            expect(br.legal_rook_movement?([-3, 2], -3, 6)).to be true
+        end
+
+        it 'returns true when making a legal rook move' do 
+            expect(br.legal_rook_movement?([-3, 6], -3, 2)).to be true
+        end
+
+        it 'returns true when making a legal rook move' do
+            expect(br.legal_rook_movement?([-3, 4], -6, 4)).to be true
+        end
+
+        it 'returns true when making a legal rook move' do
+            expect(br.legal_rook_movement?([-6, 4], -3, 4)).to be true
+        end
+        
+        it 'returns false when maing an ilegal rook move' do
+            expect(br.legal_rook_movement?([-4, 7], -3, 2)).to be false
+        end
+
+        it 'returns false when rook jumps over piece' do
+            br.grid[-4][3] = board.black_pawn
+            expect(br.legal_rook_movement?([-6, 3], -1, 3)).to be false
+        end
+
+        it 'returns false when rook lands on friendly piece' do
+            br.grid[-6][4] = board.white_rook
+            expect(br.legal_rook_movement?([-6, 4], -2, 4)).to be false
+        end
+    end
+
+    context 'legal_queen_movement?' do
+        brd = Board.new
+        it 'returns true when queen makes a legal move diagonally' do
+            expect(brd.legal_queen_movement?([-3, 4], -5, 2)).to be true
+        end
+
+        it 'returns true when it makes a legal move vertically' do
+            expect(brd.legal_queen_movement?([-3, 4], -6, 4)).to be true
+        end
+
+        it 'returns true when it a legal horiz move is made' do
+            expect(brd.legal_queen_movement?([-3, 1], -3, 7)).to be true
+        end
+
+        it 'returns false making an ilegal move' do
+            expect(brd.legal_queen_movement?([-3, 4], -6, 3)).to be false
+        end
+        
+        it 'returns false when landing on a friendly piece' do
+            brd.grid[-4][4] = board.white_queen
+            expect(brd.legal_queen_movement?([-4, 4], -2, 4)).to be false
+        end
+    end
+
+    context 'legal_king_movement?' do
+        board_2 = Board.new
+        it 'returns true when making a legal vertical king move' do
+            expect(board_2.legal_king_movement?([-3, 4], -4, 4)).to be true
+        end
+        it 'returns true when making a legal vertical king move' do
+            expect(board_2.legal_king_movement?([-4, 4], -3, 4)).to be true
+        end
+        it 'returns true when making a legal hor move' do
+            expect(board_2.legal_king_movement?([-4, 4], -4, 3)).to be true
+        end
+        it "returns true when making a legal hor move" do
+            expect(board_2.legal_king_movement?([-4, 3], -4, 4)).to be true
+        end
+        it 'returns true when making a diag move' do
+            expect(board_2.legal_king_movement?([-4, 4], -3, 3)).to be true
+        end
+        it 'returns false when making an ilegal move' do
+            expect(board_2.legal_king_movement?([-4, 3], -4, 5)).to be false
         end
     end
 end

@@ -139,7 +139,7 @@ class Board
                 return true
             end
             #if black include, you're taking a piece
-        else
+        elsif black.include?(grid[piece_position[0]][piece_position[1]])
             if black.include?(grid[row][collumn])
                 return true
             end
@@ -228,48 +228,41 @@ class Board
 
     def rook_jumped_over_piece?(piece_position, row, collumn)
         #works for rr
-        if piece_position[0] - row != 0 
-            diff = row + piece_position[0]
-            squares_between_start_end = diff - 1
-            if squares_between_start_end > 0
-                i = 1
-                until i > squares_between_start_end
-                    if grid[piece_position[0]-i][collumn] != '□'
-                        return false
-                    end
-                    i+=1
+        if piece_position[0] < row 
+            i = piece_position[0] + 1
+            until i == row
+                unless grid[i][collumn] == '□'
+                    return true
                 end
-            else
-                i = -1
-                until i < squares_between_start_end
-                    if grid[piece_position[0]+i][collumn] != '□'
-                        return false
-                    end
-                    i-=1
-                end
+                i+=1
             end
-        elsif piece_position[1] - collumn != 0 
-            diff = collumn - piece_position[1]
-            squares_between_start_end = diff - 1
-            if squares_between_start_end > 0
-                i = 1
-                until i > squares_between_start_end
-                    if grid[row][piece_position[1]-i] != '□'
-                        return false
-                    end
-                    i+=1
+        elsif piece_position[0] < row 
+            i = piece_position[0] - 1
+            until i == row
+                unless grid[i][collumn] == '□'
+                    return true
                 end
-            else
-                i = -1
-                until i < squares_between_start_end
-                    if grid[row][piece_position[1]+i] != '□'
-                        return false
-                    end
-                    i-=1
+                i-=1
+            end
+        
+        elsif piece_position[1] < collumn
+            i = piece_position[1] + 1
+            until i == collumn
+                unless grid[row][i] == '□'
+                    return true
                 end
+                i+=1
+            end
+        elsif piece_position[1] > collumn
+            i = piece_position[1] - 1
+            until i == collumn
+                unless grid[row][i] == '□'
+                    return true
+                end
+                i-=1
             end
         end
-        true
+        false
     end
     def legal_rook_movement?(piece_position, row, collumn)
         #works for rr
@@ -280,23 +273,29 @@ class Board
                 return true
             elsif row - piece_position[0] != 0 && collumn - piece_position[1] == 0
                 return true
-            elsif row - piece_position[0] != 0 && collumn - piece_position[1] != 0
-                return true
             else
                 return false
             end
         end
+        return false
     end
 
     def legal_queen_movement?(piece_position, row, collumn)
         #works for rr
-        unless bishop_jumped_over_piece?(piece_position, row, collumn) || rook_jumped_over_piece?(piece_position, row, collumn) || landing_on_friendly_piece?(piece_position, row, collumn)
+        if row - piece_position[0] == 0 && collumn - piece_position[1] != 0 || row - piece_position[0] != 0 && collumn - piece_position[1] == 0
+            ilegal_check = rook_jumped_over_piece?(piece_position, row, collumn)
+        else
+            ilegal_check = bishop_jumped_over_piece?(piece_position, row, collumn)
+        end
+        
+        unless ilegal_check || landing_on_friendly_piece?(piece_position, row, collumn)
             if legal_rook_movement?(piece_position, row, collumn) || legal_bishop_movement?(piece_position, row, collumn)
                 return true
             else
                 return false
             end
         end
+        false
     end
 
     def legal_king_movement?(piece_position, row, collumn)
@@ -384,3 +383,6 @@ class Game
     end
 end
 
+
+board = Board.new
+board.legal_queen_movement?([-3, 4], -6, 4)
