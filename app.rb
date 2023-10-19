@@ -57,7 +57,8 @@ class Board
     end
 
     def legal_move?(piece, piece_position, row, collumn)
-        if outside_board?(row, collumn) || legal_piece_movement?(piece, piece_position, row, collumn) == false || find_piece(piece) == false 
+        #works for rr
+        if outside_board?(row, collumn) || find_piece(piece, row, collumn) == false || legal_piece_movement?(piece, piece_position, row, collumn) == false
             false
         else
             true
@@ -65,19 +66,21 @@ class Board
     end
         
     def outside_board?(row, collumn)
-        check = true
-        grid[row].nil? ? check = false : ''
-        check == false ? '' : grid[row][collumn].nil? ? check = false : ''
+        #works for rr
+        check = false
+        grid[row].nil? ? check = true : ''
+        check == true ? '' : grid[row][collumn].nil? ? check = true : ''
+        
         check
     end
 
     def get_piece(piece, turn, row, collumn)
-        if piece == ''
+        #works for rr
+        if piece == 'p'
             turn == 'white' ? piece = white_pawn : piece = black_pawn
-        
         elsif piece == 'n'
+            p 'NNN'
             turn == 'white' ? piece = white_knight : piece = black_knight
-        
         elsif piece == 'b'
             turn == 'white' ? piece = white_bishop : piece = black_bishop
 
@@ -95,6 +98,7 @@ class Board
     end
 
     def legal_piece_movement? (piece, piece_position, row, collumn)
+        #works for rr
         if piece == white_pawn || piece == black_pawn
             legal_pawn_movement?(piece_position, row, collumn)
         elsif piece == white_knight || piece == black_knight
@@ -111,47 +115,54 @@ class Board
     end
         
     def find_piece (piece, row, collumn)
-        if piece = white_pawn || piece == black_pawn
-            
-
-
-        grid.each_with_index do |row, i|
-            if row.index(piece).nil?
-                next
-            else
-                j = row.index(piece)
-                return [i, j]
+        #works for rr
+        if piece == white_pawn || piece == black_pawn
+            if grid[row + 1][collumn] == piece
+                return [row + 1, collumn]
+            end
+        else
+            grid.each_with_index do |row, i|
+                if row.index(piece).nil?
+                    next
+                else
+                    j = row.index(piece)
+                    return [i-8, j]
+                end
             end
         end
         return false
     end
 
+    def legal_pawn_movement?(piece_position, row, collumn)
+        #works for rr
+
+        unless piece_position[0] - 1 == row
+            return false
+        end
+        if grid[row][collumn] != '□'
+            return false
+        end
+        return true
+    end
+
     def legal_knight_movement?(piece_position, row, collumn)
+        #works for rr
         POSSIBLE_KNIGHT_MOVES.each do |combo|
-            if piece_position[0] + combo[0] == row && piece_position[1] + combo[1] == collumn
+            if piece_position[0] - combo[0] == row && piece_position[1] + combo[1] == collumn
                 return true
             end
         end
         false
     end
 
-    def legal_pawn_movement?(piece_position, row, collumn)
-        unless piece_position[0] + 1 == row
-            false
-        end
-        if grid[row][collumn] != '□'
-            false
-        end
-        true
-    end
-
     def bishop_jumped_over_piece?(piece_position, row, collumn)
+        #works for rr
         diff = row - piece_position[0]
         squares_between_start_end = diff - 1
         if squares_between_start_end > 0
             i = 1
             until i > squares_between_start_end
-                if grid[piece_position[0]+i][piece_position[1]+i] != '□'
+                if grid[piece_position[0]-i][piece_position[1]+i] != '□'
                     return false
                 end
                 i+=1
@@ -159,7 +170,7 @@ class Board
         else
             i = -1
             until i < squares_between_start_end
-                if grid[piece_position[0]-i][piece_position[1]-i] != '□'
+                if grid[piece_position[0]+i][piece_position[1]-i] != '□'
                     return false
                 end
                 i-=1
@@ -169,9 +180,10 @@ class Board
     end
 
     def legal_bishop_movement?(piece_position, row, collumn)
+        #works for rr
         unless bishop_jumped_over_piece?(piece_position, row, collumn)
             POSSIBLE_BISHOP_MOVES.each do |combo|
-                if piece_position[0] + combo[0] == row && piece_position[1] + combo[1] == collumn
+                if piece_position[0] - combo[0] == row && piece_position[1] + combo[1] == collumn
                     return true
                 end
             end
@@ -179,14 +191,15 @@ class Board
         end
     end
 
-    def rooke_jumped_over_piece?(piece_position, row, collumn)
-        if row != 0 
-            diff = row - piece_position[0]
+    def rook_jumped_over_piece?(piece_position, row, collumn)
+        #works for rr
+        if piece_position[0] - row != 0 
+            diff = row + piece_position[0]
             squares_between_start_end = diff - 1
             if squares_between_start_end > 0
                 i = 1
                 until i > squares_between_start_end
-                    if grid[piece_position[0]+i][collumn] != '□'
+                    if grid[piece_position[0]-i][collumn] != '□'
                         return false
                     end
                     i+=1
@@ -194,19 +207,19 @@ class Board
             else
                 i = -1
                 until i < squares_between_start_end
-                    if grid[piece_position[0]-i][collumn] != '□'
+                    if grid[piece_position[0]+i][collumn] != '□'
                         return false
                     end
                     i-=1
                 end
             end
-        elsif collumn != 0 
+        elsif piece_position[1] - collumn != 0 
             diff = collumn - piece_position[1]
             squares_between_start_end = diff - 1
             if squares_between_start_end > 0
                 i = 1
                 until i > squares_between_start_end
-                    if grid[row][piece_position[1]+i] != '□'
+                    if grid[row][piece_position[1]-i] != '□'
                         return false
                     end
                     i+=1
@@ -214,7 +227,7 @@ class Board
             else
                 i = -1
                 until i < squares_between_start_end
-                    if grid[row][piece_position[1]-i] != '□'
+                    if grid[row][piece_position[1]+i] != '□'
                         return false
                     end
                     i-=1
@@ -224,31 +237,37 @@ class Board
         true
     end
     def legal_rook_movement?(piece_position, row, collumn)
+        #works for rr
+
         #it needs to be Not 0 in one and 0 in the other
-        unless rooke_jumped_over_piece?(piece_position, row, collumn)
-            if row == 0 && collumn != 0
-                true
-            elsif row != 0 && collumn == 0
-                true
+        unless rook_jumped_over_piece?(piece_position, row, collumn)
+            if row - piece_position[0] == 0 && collumn - piece_position[1] != 0
+                return true
+            elsif row - piece_position[0] != 0 && collumn - piece_position[1] == 0
+                return true
+            elsif row - piece_position[0] != 0 && collumn - piece_position[1] != 0
+                return true
             else
-                false
+                return false
             end
         end
     end
 
     def legal_queen_movement?(piece_position, row, collumn)
-        unless bishop_jumped_over_piece?(piece_position, row, collumn) || rooke_jumped_over_piece?(piece_position, row, collumn)
+        #works for rr
+        unless bishop_jumped_over_piece?(piece_position, row, collumn) || rook_jumped_over_piece?(piece_position, row, collumn)
             if legal_rook_movement?(piece_position, row, collumn) || legal_bishop_movement?(piece_position, row, collumn)
-                true
+                return true
             else
-                false
+                return false
             end
         end
     end
 
     def legal_king_movement?(piece_position, row, collumn)
-        POSSIBLE_KNIGHT_MOVES.each do |combo|
-            if piece_position[0] + combo[0] == row && piece_position[1] + combo[1] == collumn
+        #works for rr
+        POSSIBLE_KING_MOVES.each do |combo|
+            if piece_position[0] - combo[0] == row && piece_position[1] + combo[1] == collumn
                 return true
             end
         end
@@ -304,20 +323,16 @@ class Game
         puts "-------"
         puts "-------"
         
-        puts "Choose piece (k, q, r, b, n: '')"
+        puts "Choose piece (k, q, r, b, n, p)"
         piece = gets.chomp
         puts "Choose row: "
         row = -(gets.chomp.to_i)
         puts "Choose collumn: "
         collumn = gets.chomp.to_i - 1
+
         
         puts "-------"
         puts "-------"
-        
-        if row > 7 || row < 0 || collumn > 7 || collumn < 0
-            puts 'Invalid move'
-            return
-        end
 
         piece = board.get_piece(piece, turn, row, collumn)
         piece_position = board.find_piece(piece, row, collumn)
@@ -332,8 +347,3 @@ class Game
     end
 end
 
-
-g = Game.new
-g.play_round
-g.play_round
-# g.board.display_board
