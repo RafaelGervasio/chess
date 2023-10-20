@@ -1,106 +1,31 @@
 module Pieces
-    WHITE_KING = "♔"
-    WHITE_QUEEN = "♕"
-  
-    WHITE_K_ROOK = "♖"
-    WHITE_Q_ROOK = "♖"
-  
-    WHITE_K_BISHOP = "♗"
-    WHITE_Q_BISHOP = "♗"
-  
-    WHITE_K_KNIGHT = "♘"
-    WHITE_Q_KNIGHT = "♘"
-  
-    WHITE_PAWN_1 = "♙"
-    WHITE_PAWN_2 = "♙"
-    WHITE_PAWN_3 = "♙"
-    WHITE_PAWN_4 = "♙"
-    WHITE_PAWN_5 = "♙"
-    WHITE_PAWN_6 = "♙"
-    WHITE_PAWN_7 = "♙"
-    WHITE_PAWN_8 = "♙"
-  
-    WHITE_PIECES = [
-        WHITE_KING,
-        WHITE_QUEEN,
-        WHITE_K_ROOK,
-        WHITE_Q_ROOK,
-        WHITE_K_BISHOP,
-        WHITE_Q_BISHOP,
-        WHITE_K_KNIGHT,
-        WHITE_Q_KNIGHT,
-        WHITE_PAWN_1,
-        WHITE_PAWN_2,
-        WHITE_PAWN_3,
-        WHITE_PAWN_4,
-        WHITE_PAWN_5,
-        WHITE_PAWN_6,
-        WHITE_PAWN_7,
-        WHITE_PAWN_8
-    ]
+    attr_accessor :white_king, :white_queen, :white_rooks, :white_bishops, :white_knights, :white_pawns, 
+    :black_king, :black_queen, :black_rooks, :black_bishops, :black_knights, :black_pawns
+    def create_pieces
+        @white_king = ["♔", false]
+        @white_queen = ["♕", false]
+        @white_rooks = [["♖", false], ["♖", false]]
+        @white_bishops = [["♗", false], ["♗", false]]
+        @white_knights = [["♘", false], ["♘", false]]
+        @white_pawns = []
+        
+        @black_king = ["♚", false]
+        @black_queen = ["♚", false]
+        @black_rooks = [["♜", false], ["♜", false]]
+        @black_bishops = [["♝", false], ["♝", false]]
+        @black_knights = [["♞", false], ["♞", false]]
+        @black_pawns = []
+        populate_pawns()
+    end
 
-    BLACK_KING = "♚"
-    BLACK_QUEEN = "♛"
-  
-    BLACK_K_ROOK = "♜"
-    BLACK_Q_ROOK = "♜"
-  
-    BLACK_K_BISHOP = "♝"
-    BLACK_Q_BISHOP = "♝"
-  
-    BLACK_K_KNIGHT = "♞"
-    BLACK_Q_KNIGHT = "♞"
-  
-    BLACK_PAWN_1 = "♟"
-    BLACK_PAWN_2 = "♟"
-    BLACK_PAWN_3 = "♟"
-    BLACK_PAWN_4 = "♟"
-    BLACK_PAWN_5 = "♟"
-    BLACK_PAWN_6 = "♟"
-    BLACK_PAWN_7 = "♟"
-    BLACK_PAWN_8 = "♟"
-
-    BLACK_PIECES = [
-        BLACK_KING,
-        BLACK_QUEEN,
-        BLACK_K_ROOK,
-        BLACK_Q_ROOK,
-        BLACK_K_BISHOP,
-        BLACK_Q_BISHOP,
-        BLACK_K_KNIGHT,
-        BLACK_Q_KNIGHT,
-        BLACK_PAWN_1,
-        BLACK_PAWN_2,
-        BLACK_PAWN_3,
-        BLACK_PAWN_4,
-        BLACK_PAWN_5,
-        BLACK_PAWN_6,
-        BLACK_PAWN_7,
-        BLACK_PAWN_8
-    ]
-  
-    WHITE_PAWNS = [
-      WHITE_PAWN_1,
-      WHITE_PAWN_2,
-      WHITE_PAWN_3,
-      WHITE_PAWN_4,
-      WHITE_PAWN_5,
-      WHITE_PAWN_6,
-      WHITE_PAWN_7,
-      WHITE_PAWN_8
-    ]
-  
-    BLACK_PAWNS = [
-      BLACK_PAWN_1,
-      BLACK_PAWN_2,
-      BLACK_PAWN_3,
-      BLACK_PAWN_4,
-      BLACK_PAWN_5,
-      BLACK_PAWN_6,
-      BLACK_PAWN_7,
-      BLACK_PAWN_8
-    ]
+    def populate_pawns
+        (1..8).each do |i|
+            white_pawns.push(["♙", false])
+            black_pawns.push(["♟", false])
+        end
+    end
 end
+#using_loop_to_gen_pieces
   
 
 
@@ -114,40 +39,44 @@ class Board
 
     def initialize
         @grid = Array.new(8) {Array.new(8) {'□'}}
+        create_pieces()
         populate_board()
     end
     def populate_board
         (0..7).each do |i|
-            grid[-7][i] = BLACK_PAWNS[i]
+            grid[-7][i] = black_pawns[i]
         end        
         (0..7).each do |i|
-            grid[-2][i] = WHITE_PAWNS[i]
+            grid[-2][i] = white_pawns[i]
         end
 
-        grid[0][0] = BLACK_Q_ROOK
-        grid[0][-1] = BLACK_Q_ROOK
-        grid[0][1] = BLACK_Q_KNIGHT
-        grid[0][-2] = BLACK_K_KNIGHT
-        grid[0][2] = BLACK_Q_BISHOP
-        grid[0][-3] = BLACK_K_BISHOP
-        grid[0][3] = BLACK_QUEEN
-        grid[0][-4] = BLACK_KING
+        grid[0][0] = black_rooks[0]
+        grid[0][-1] = black_rooks[1]
+        grid[0][2] = black_bishops[0]
+        grid[0][-3] = black_bishops[1]
+        grid[0][1] = black_knights[0]
+        grid[0][-2] = black_knights[1]
+        grid[0][3] = black_queen
+        grid[0][-4] = black_king
         
-        grid[-1][0] = WHITE_Q_ROOK
-        grid[-1][-1] = WHITE_K_ROOK
-        grid[-1][1] = WHITE_Q_KNIGHT
-        grid[-1][-2] = WHITE_K_KNIGHT
-        grid[-1][2] = WHITE_Q_BISHOP
-        grid[-1][-3] = WHITE_K_BISHOP
-        grid[-1][3] = WHITE_QUEEN
-        grid[-1][-4] = WHITE_KING
-        
+        grid[-1][0] = white_rooks[0]
+        grid[-1][-1] = white_rooks[1]
+        grid[-1][1] = white_knights[0]
+        grid[-1][-2] = white_knights[1]
+        grid[-1][2] = white_bishops[0]
+        grid[-1][-3] = white_bishops[1]
+        grid[-1][3] = white_queen
+        grid[-1][-4] = white_king
       end
       
     
     def display_board
         grid.each do |row|
-            puts row.join(' ')
+            row.each do |piece|
+                print piece[0]
+                print ' '
+            end
+            puts ''
         end
     end
     def update_board (piece, piece_position, row, collumn)
@@ -503,7 +432,5 @@ class Game
 end
 
 
-game = Game.new
-
-game.board.grid[-8][3] = game.board.grid[0][3]
-p game.board.check?('white')
+board = Board.new
+board.display_board
