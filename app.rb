@@ -1,6 +1,6 @@
 module Pieces
-    attr_accessor :white_king, :white_queen, :white_rooks, :white_bishops, :white_knights, :white_pawns, 
-    :black_king, :black_queen, :black_rooks, :black_bishops, :black_knights, :black_pawns
+    attr_accessor :white_king, :white_queen, :white_rooks, :white_bishops, :white_knights, :white_pawns, :white_pieces,
+    :black_king, :black_queen, :black_rooks, :black_bishops, :black_knights, :black_pawns, :black_pieces
     
     def create_pieces
         @white_king = ["♔", false]
@@ -9,6 +9,7 @@ module Pieces
         @white_bishops = [["♗", false], ["♗", false]]
         @white_knights = [["♘", false], ["♘", false]]
         @white_pawns = []
+        @white_pieces = [white_king, white_queen, white_rooks, white_bishops, white_knights, white_pawns]
         
         @black_king = ["♚", false]
         @black_queen = ["♚", false]
@@ -16,6 +17,8 @@ module Pieces
         @black_bishops = [["♝", false], ["♝", false]]
         @black_knights = [["♞", false], ["♞", false]]
         @black_pawns = []
+        @black_pieces = [black_king, black_queen, black_rooks, black_bishops, black_knights, black_pawns]
+        
         populate_pawns()
     end
 
@@ -26,17 +29,19 @@ module Pieces
         end
     end
 end
-#using_loop_to_gen_pieces
   
-
-
 class Board
     include Pieces
     attr_accessor :grid 
 
+    POSSIBLE_PAWN_MOVES = [-1, 0].freeze
     POSSIBLE_KNIGHT_MOVES = [[1, 2] , [1, -2], [-1, 2], [-1, -2], [2, 1], [2, -1], [-2, 1], [-2, -1]].freeze
     POSSIBLE_BISHOP_MOVES = [[-1, -1], [-2, -2], [-3, -3], [-4, -4], [-5, -5], [-6, -6], [-7, -7], [1, 1], [2, 2], [3, 3], [4, 4], [5, 5], [6, 6], [7, 7], [-1, 1], [-2, 2], [-3, 3], [-4, 4], [-5, 5], [-6, 6], [-7, 7], [1, -1], [2, -2], [3, -3], [4, -4], [5, -5], [6, -6], [7, -7]].freeze
+    POSSIBLE_ROOK_MOVES = [[-1, 0], [-2, 0], [-3, 0], [-4, 0], [-5, 0], [-6, 0], [-7, 0], [0, 1], [0, 2], [0, 3], [0, 4], [0, 5], [0, 6], [0, 7]].freeze
+    POSSIBLE_QUEEN_MOVES = POSSIBLE_BISHOP_MOVES + POSSIBLE_ROOK_MOVES
     POSSIBLE_KING_MOVES = [ [1,1], [-1, -1], [1, -1], [-1, 1], [1, 0], [0, 1], [-1, 0], [0, -1]].freeze
+
+    #then you have all the moves
 
     def initialize
         @grid = Array.new(8) {Array.new(8) {'□'}}
@@ -118,6 +123,7 @@ class Board
         #The moved and coordinates in the array are lost
         temp = piece
         grid[piece_position[0]][piece_position[1]] = '□'
+        grid[row][collumn] = nil
         grid[row][collumn] = temp
     end
 
@@ -130,131 +136,157 @@ class Board
         check
     end
 
-    def make_movement(piece, turn, row, collumn)
-        if piece == 'p'
-            if turn == 'white'
-                if white_pawns.none? {|pawn| pawn[2] == collumn}
-                    return 'Ilegal Move'
-                else
-                    piece = white_pawns.find {|pawn| pawn[2] == collumn}
-                    if legal_pawn_movement?(piece[2], row, collumn)
-                        update_board(piece, piece[2], row, collumn)
-                        find_piece_cordinates(piece)
-                    else
-                        return 'Ilegal Move'
-                    end
-                end
+    def find_pawn(turn, row, collumn)
+        if turn == 'white'
+            if white_pawns.none? {|pawn| pawn[2][1] == collumn}
+                return false
             else
-                if black_pawns.none? {|pawn| pawn[2] == collumn}
-                    return 'Ilegal Move'
-                else
-                    piece = black_pawns.find {|pawn| pawn[2] == collumn}
-                    if legal_pawn_movement?(piece[2], row, collumn)
-                        update_board(piece, piece[2], row, collumn)
-                        find_piece_cordinates(piece)
-                    else
-                        return 'Ilegal Move'
-                    end
-                end
+                piece = white_pawns.find {|pawn| pawn[2][1] == collumn}
             end
-        elsif piece == 'n'
-            if turn == white
-                #Try it with each knight coodinates as the piece position
-                if legal_knight_movement?(white_knights[0][2], row, collumn)
-                    piece = white_knights[0]
-                    update_board(piece, piece[2], row, collumn)
-                    find_piece_cordinates(piece)
-                elsif legal_knight_movement?(white_knights[1][2], row, collumn)
-                    piece = white_knights[1]
-                    update_board(piece, piece[2], row, collumn)
-                    find_piece_cordinates(piece)
-                end
+        else
+            if black_pawns.none? {|pawn| pawn[2][1] == collumn}
+                return false
             else
-                if legal_knight_movement?(black_knights[0][2], row, collumn)
-                    piece = black_knights[0]
-                    update_board(piece, piece[2], row, collumn)
-                    find_piece_cordinates(piece)
-                elsif legal_knight_movement?(black_knights[1][2], row, collumn)
-                    piece = black_knights[1]
-                    update_board(piece, piece[2], row, collumn)
-                    find_piece_cordinates(piece)
-                else
-                    return 'Ilegal move'
-                end
+                piece = black_pawns.find {|pawn| pawn[2][1] == collumn}
+        end
+        return piece
+    end
+
+    def find_knight(turn, row, collumn)
+        if turn == 'white'
+            if legal_knight_movement?(white_knights[0][2], row, collumn, turn)
+                piece = white_knights[0]
+            elsif legal_knight_movement?(white_knights[1][2], row, collumn, turn)
+                piece = white_knights[1]
+            else
+                return false
             end
-        elsif piece == 'b'
-            if turn == white
-                #Try it with each knight coodinates as the piece position
-                if legal_bishop_movement?(white_bishops[0][2], row, collumn)
-                    piece = white_bishops[0]
-                    update_board(piece, piece[2], row, collumn)
-                    find_piece_cordinates(piece)
-                elsif legal_bishop_movement?(white_bishops[1][2], row, collumn)
-                    piece = white_bishops[1]
-                    update_board(piece, piece[2], row, collumn)
-                    find_piece_cordinates(piece)
-                else
-                    return 'Ilegal move'
-                end
+        else
+            if legal_knight_movement?(black_knights[0][2], row, collumn, turn)
+                piece = black_knights[0]
+            elsif legal_knight_movement?(black_knights[1][2], row, collumn, turn)
+                piece = black_knights[1]
             else
-                if legal_bishop_movement?(black_bishops[0][2], row, collumn)
-                    piece = black_bishops[0]
-                    update_board(piece, piece[2], row, collumn)
-                    find_piece_cordinates(piece)
-                elsif legal_bishop_movement?(black_bishops[1][2], row, collumn)
-                    piece = black_bishops[1]
-                    update_board(piece, piece[2], row, collumn)
-                    find_piece_cordinates(piece)
-                else
-                    return 'Ilegal move'
-                end
-            end
-        elsif piece == 'r'
-            if turn == white
-                #Try it with each knight coodinates as the piece position
-                if legal_rook_movement?(white_rooks[0][2], row, collumn)
-                    piece = white_rooks[0]
-                    update_board(piece, piece[2], row, collumn)
-                    find_piece_cordinates(piece)
-                elsif legal_rook_movement?(white_rooks[1][2], row, collumn)
-                    piece = white_rooks[1]
-                    update_board(piece, piece[2], row, collumn)
-                    find_piece_cordinates(piece)
-                else
-                    return 'Ilegal move'
-                end
-            else
-                if legal_rook_movement?(black_rooks[0][2], row, collumn)
-                    piece = black_rooks[0]
-                    update_board(piece, piece[2], row, collumn)
-                    find_piece_cordinates(piece)
-                elsif legal_rook_movement?(black_rooks[1][2], row, collumn)
-                    piece = black_rooks[1]
-                    update_board(piece, piece[2], row, collumn)
-                    find_piece_cordinates(piece)
-                else
-                    return 'Ilegal move'
-                end
-            end
-        elsif piece == 'q'
-            turn == 'white' ? piece = white_queen : piece = black_queen
-            if legal_queen_movement?(piece[2], row, collumn)
-                update_board(piece, piece[2], row, collumn)
-                find_piece_cordinates(piece)
-            else
-                return 'Ilegal move'
-            end
-        elsif piece == 'k'
-            turn == 'white' ? piece = white_king : piece = black_king
-            if legal_king_movement?(piece[2], row, collumn)
-                update_board(piece, piece[2], row, collumn)
-                find_piece_cordinates(piece)
-            else
-                return 'Ilegal move'
+                return false
             end
         end
+        return piece
     end
- 
+
+    def find_bishop(turn, row, collumn)
+        if turn == 'white'
+            if legal_bishop_movement?(white_bishops[0][2], row, collumn, turn)
+                piece = white_bishops[0]
+            if legal_bishop_movement?(white_bishops[1][2], row, collumn, turn)
+                piece = white_bishops[1]
+            else
+                return false
+            end
+        else
+            if legal_bishop_movement?(black_bishops[0][2], row, collumn, turn)
+                piece = black_bishops[0]
+            if legal_bishop_movement?(black_bishops[1][2], row, collumn, turn)
+                piece = black_bishops[1]
+            else
+                return false
+            end
+        end
+        return piece
+    end
+
+    def find_rook(turn, row, collumn)
+        if turn == 'white'
+            if legal_rook_movement?(white_rooks[0][2], row, collumn, turn)
+                piece = white_rooks[0]
+            if legal_rook_movement?(white_rooks[1][2], row, collumn, turn)
+                piece = white_rooks[1]
+            else
+                return false
+            end
+        else
+            if legal_rook_movement?(black_rooks[0][2], row, collumn, turn)
+                piece = black_rooks[0]
+            if legal_rook_movement?(white_rooks[1][2], row, collumn, turn)
+                piece = black_rooks[1]
+            else
+                return false
+            end
+        end
+        return piece
+    end
+
+    def find_piece(piece_letter, turn, row, collumn)
+        if piece_letter == 'p'
+            piece = find_pawn(turn, row, collumn)
+        elsif piece_letter == 'n'
+            piece = find_knight(turn, row, collumn)
+        elsif piece_letter == 'b'
+            piece = find_bishop(turn, row, collumn)
+        elsif piece_letter == 'r'
+            piece = find_rook(turn, row, collumn)
+        elsif piece_letter == 'q'
+            turn == 'white' ? piece = white_queen : piece = black_queen
+        elsif piece_letter == 'k'
+            turn == 'white' ? piece = white_king : piece = black_king
+        end
+        return piece
+    end
+    
+    def legal_piece_move?(piece, row, collumn, turn)       
+        if white_pawns.include?(piece) || black_pawns.include?(piece)
+            return legal_pawn_movement?(piece, row, collumn)
+        elsif white_knights.include?(piece) || black_knights.include?(piece)
+            return legal_knight_movement?(piece, row, collumn)
+        elsif white_bishops.include?(piece) || black_bishops.include?(piece)
+            return legal_bishop_movement?(piece, row, collumn)
+        elsif white_rooks.include?(piece) || black_rooks.include?(piece)
+            return legal_rook_movement?(piece, row, collumn)
+        elsif piece == white_queen || piece == black_queen
+            return legal_queen_movement?(piece, row, collumn)
+        elsif piece == white_king || piece == black_king
+            return legal_king_movement?(piece, row, collumn)
+        else
+            return false
+        end
+    end
+    
+    def make_movement(piece_letter, turn, row, collumn)
+        piece = find_piece(piece_letter, turn, row, collumn)
+        unless legal_movement(piece, row, collumn, turn)
+            return false
+        end
+        update_board(piece, piece[2], row, collumn)
+        find_piece_cordinates(piece)
+    end
+
+    def legal_movement (piece, row, collumn, turn)
+        if !outside_board?(row, collumn) && legal_piece_move?(piece, row, collumn, turn) && !move_puts_my_king_in_check?(piece, row, collumn, turn)
+            return true
+        else
+            return false
+        end
+    end
+
+    def undo_move (piece, origin_square, target_square_content, row, collumn)
+        piece[2] = origin_square
+        grid[row][collumn] = target_square_content
+    end
+    
+    def move_puts_my_king_in_check?(piece, row, collumn, turn)
+        origin_square = piece[2]
+        target_square_content = grid[row][collumn]
+
+        update_board(piece, piece[2], row, collumn)
+        
+        if check?(turn)
+            undo_move(piece, origin_square, target_square_content, row, collumn)
+            return true
+        else
+            undo_move(piece, origin_square, target_square_content, row, collumn)
+            return false
+        end
+    end
+    
     def landing_on_friendly_piece?(piece_position, row, collumn)
         if grid[piece_position[0]][piece_position[1]] == '□'
             return false
@@ -282,11 +314,13 @@ class Board
         return true
     end
 
-    def legal_knight_movement?(piece_position, row, collumn)
+    def legal_knight_movement?(piece_position, row, collumn, turn)
         #works for rr
         unless landing_on_friendly_piece?(piece_position, row, collumn)
             POSSIBLE_KNIGHT_MOVES.each do |combo|
                 if piece_position[0] - combo[0] == row && piece_position[1] + combo[1] == collumn
+                    
+
                     return true
                 end
             end
@@ -436,24 +470,191 @@ class Board
         end
         false
     end
-
-    def check? (turn)
-        if turn  == 'white'
-            target = find_piece(WHITE_KING)
-            BLACK_PIECES.each do |piece|
-                if legal_piece_movement?(piece, find_piece(piece), target[0], target[1])
-                    return true
+    
+    def generate_all_pawn_moves(turn)
+        if turn == 'white'
+            legal_moves = []
+            white_pawns.each do |pawn|
+                POSSIBLE_PAWN_MOVES.map do |combo|
+                    if legal_movement(pawn, pawn[2][0] + combo[0], pawn[2][1] + combo[1], turn)
+                        legal_moves.push([pawn[2][0] + combo[0], pawn[2][1] + combo[1]])
+                    end
                 end
             end
         else
-            target = find_piece(BLACK_KING)
-            WHITE_PIECES.each do |piece|
-                if legal_piece_movement?(piece, find_piece(piece), target[0], target[1])
-                    return true
+            legal_moves = []
+            black_pawns.each do |pawn|
+                POSSIBLE_PAWN_MOVES.map do |combo|
+                    if legal_movement(pawn, pawn[2][0] + combo[0], pawn[2][1] + combo[1], turn)
+                        legal_moves.push([pawn[2][0] + combo[0], pawn[2][1] + combo[1]])
+                    end
                 end
             end
         end
-        false
+        return legal_moves
+    end
+
+    def generate_all_knight_moves(turn)
+        if turn == 'white'
+            legal_moves = []
+            white_knights.each do |knight|
+                POSSIBLE_KNIGHT_MOVES.map do |combo|
+                    if legal_movement(knight, knight[2][0] + combo[0], knight[2][1] + combo[1], turn)
+                        legal_moves.push([knight[2][0] + combo[0], knight[2][1] + combo[1]])
+                    end
+                end
+            end
+        else
+            legal_moves = []
+            black_knights.each do |knight|
+                POSSIBLE_KNIGHT_MOVES.map do |combo|
+                    if legal_movement(knight, knight[2][0] + combo[0], knight[2][1] + combo[1], turn)
+                        legal_moves.push([knight[2][0] + combo[0], knight[2][1] + combo[1]])
+                    end
+                end
+            end
+        end
+        return legal_moves
+    end
+
+    def generate_all_bishop_moves(turn)
+        if turn == 'white'
+            legal_moves = []
+            white_bishops.each do |bishop|
+                POSSIBLE_BISHOP_MOVES.map do |combo|
+                    if legal_movement(bishop, bishop[2][0] + combo[0], bishop[2][1] + combo[1], turn)
+                        legal_moves.push([bishop[2][0] + combo[0], bishop[2][1] + combo[1]])
+                    end
+                end
+            end
+        else
+            legal_moves = []
+            black_bishops.each do |bishop|
+                POSSIBLE_BISHOP_MOVES.map do |combo|
+                    if legal_movement(bishop, bishop[2][0] + combo[0], bishop[2][1] + combo[1], turn)
+                        legal_moves.push([bishop[2][0] + combo[0], bishop[2][1] + combo[1]])
+                    end
+                end
+            end
+        end
+        return legal_moves
+    end
+
+    def generate_all_rook_moves(turn)
+        if turn == 'white'
+            legal_moves = []
+            white_rooks.each do |rook|
+                POSSIBLE_ROOK_MOVES.map do |combo|
+                    if legal_movement(rook, rook[2][0] + combo[0], rook[2][1] + combo[1], turn)
+                        legal_moves.push([rook[2][0] + combo[0], rook[2][1] + combo[1]])
+                    end
+                end
+            end
+        else
+            legal_moves = []
+            black_rooks.each do |rook|
+                POSSIBLE_ROOK_MOVES.map do |combo|
+                    if legal_movement(rook, rook[2][0] + combo[0], rook[2][1] + combo[1], turn)
+                        legal_moves.push([rook[2][0] + combo[0], rook[2][1] + combo[1]])
+                    end
+                end
+            end
+        end
+        return legal_moves
+    end
+
+    def generate_all_queen_moves(turn)
+        if turn == 'white'
+            legal_moves = []
+            POSSIBLE_QUEEN_MOVES.map do |combo|
+                if legal_movement(white_queen, white_queen[2][0] + combo[0], white_queen[2][1] + combo[1], turn)
+                    legal_moves.push([white_queen[2][0] + combo[0], white_queen[2][1] + combo[1]])
+                end
+            end
+        else
+            legal_moves = []
+            POSSIBLE_QUEEN_MOVES.map do |combo|
+                if legal_movement(black_queen, black_queen[2][0] + combo[0], black_queen[2][1] + combo[1], turn)
+                    legal_moves.push([black_queen[2][0] + combo[0], black_queen[2][1] + combo[1]])
+                end
+            end
+        end
+        return legal_moves
+    end
+
+    def generate_all_king_moves
+        if turn == 'white'
+            legal_moves = []
+            POSSIBLE_KING_MOVES.map do |combo|
+                if legal_movement(white_king, white_king[2][0] + combo[0], white_king[2][1] + combo[1], turn)
+                    legal_moves.push([white_king[2][0] + combo[0], white_king[2][1] + combo[1]])
+                end
+            end
+        else
+            legal_moves = []
+            POSSIBLE_KING_MOVES.map do |combo|
+                if legal_movement(black_king, black_king[2][0] + combo[0], black_king[2][1] + combo[1], turn)
+                    legal_moves.push([black_king[2][0] + combo[0], black_king[2][1] + combo[1]])
+                end
+            end
+        end
+        legal_moves
+    end
+    
+    def is_there_a_legal_move?(turn)
+        all_legal_moves = [generate_all_pawn_moves(turn) + generate_all_knight_moves(turn) + generate_all_bishop_moves(turn) + generate_all_rook_moves(turn) + generate_all_queen_moves(turn) + generate_all_king_moves(turn)]
+        if all_legal_moves.emptyy
+            return false
+        else
+            return true
+        end
+    end
+    
+    def check? (turn)
+        if turn == 'white'
+            target_row = white_king[2][0]
+            target_collumn = white_king[2][1]
+            if legal_king_movement?([black_king[2][0], black_king[2][1]], target_row, target_collumn) ||
+                legal_queen_movement?([black_queen[2][0], black_queen[2][1]], target_row, target_collumn) ||
+                legal_rook_movement?([black_rooks[0][2][0], black_rooks[0][2][1]], target_row, target_collumn) ||
+                legal_rook_movement?([black_rooks[1][2][0], black_rooks[1][2][1]], target_row, target_collumn) ||
+                legal_bishop_movement?([black_bishops[0][2][0], black_bishops[0][2][1]], target_row, target_collumn) ||
+                legal_bishop_movement?([black_bishops[1][2][0], black_bishops[1][2][1]], target_row, target_collumn) ||
+                legal_knight_movement?([black_knights[0][2][0], black_knights[0][2][1]], target_row, target_collumn) ||
+                legal_knight_movement?([black_knights[1][2][0], black_knights[1][2][1]], target_row, target_collumn)
+               return true
+            end
+        else
+            target_row = black_king[2][0]
+            target_collumn = black_king[2][1]
+            if legal_king_movement?([white_king[2][0], white_king[2][1]], target_row, target_collumn) ||
+                legal_queen_movement?([white_queen[2][0], white_queen[2][1]], target_row, target_collumn) ||
+                legal_rook_movement?([white_rooks[0][2][0], white_rooks[0][2][1]], target_row, target_collumn) ||
+                legal_rook_movement?([white_rooks[1][2][0], white_rooks[1][2][1]], target_row, target_collumn) ||
+                legal_bishop_movement?([white_bishops[0][2][0], white_bishops[0][2][1]], target_row, target_collumn) ||
+                legal_bishop_movement?([white_bishops[1][2][0], white_bishops[1][2][1]], target_row, target_collumn) ||
+                legal_knight_movement?([white_knights[0][2][0], white_knights[0][2][1]], target_row, target_collumn) ||
+                legal_knight_movement?([white_knights[1][2][0], white_knights[1][2][1]], target_row, target_collumn)
+               return true
+             end             
+        end 
+        return false
+    end
+
+    def checkmate? (turn, checking_piece)
+        if is_there_a_legal_move?(turn)
+            false
+        else
+            true
+        end
+    end
+
+    def stalemate? (turn)
+        if is_there_a_legal_move?(turn)
+            false
+        else
+            true
+        end
     end
 
 
@@ -494,7 +695,7 @@ class Game
         #create create players
     end
 
-    def play_round
+    def play_round(checking_piece = nil)
         board.display_board
         puts "-------"
         puts "-------"
@@ -519,6 +720,8 @@ class Game
             board.make_movement(piece, turn, row, collumn)
             board.display_board()
             switch()
+            if board.check?()
+                play_round()
         end
     end
 end

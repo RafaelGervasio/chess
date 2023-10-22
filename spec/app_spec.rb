@@ -178,4 +178,13 @@ describe Board do
             expect(board_3.grid[-5][4] == board_3.white_rooks[0]).to be true
         end
     end
+
+    context 'check?' do
+        board_4 = Board.new
+        board_4.black_queen[2] = [-1, 3]
+
+        it 'returns true when white king is in check' do
+            expect(board_4.check?('white')).to be true
+        end
+    end
 end
